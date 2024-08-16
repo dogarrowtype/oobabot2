@@ -455,6 +455,7 @@ class DiscordBot(discord.Client):
             users="users" in allowed_mentions,
             roles="roles" in allowed_mentions,
         )
+        self.mention_replied_user = discord_settings["mention_replied_user"]
         self.respond_in_thread = discord_settings["respond_in_thread"]
         self.use_immersion_breaking_filter = discord_settings["use_immersion_breaking_filter"]
         self.retries = discord_settings["retries"]
@@ -1790,6 +1791,7 @@ class DiscordBot(discord.Client):
                 last_message = await response_channel.send(
                     response.strip(),
                     allowed_mentions=self._allowed_mentions,
+                    mention_author=self.mention_replied_user,
                     suppress_embeds=True,
                     **kwargs
                 )
@@ -1905,6 +1907,7 @@ class DiscordBot(discord.Client):
                         last_message = await response_channel.send(
                             new_response.strip(),
                             allowed_mentions=self._allowed_mentions,
+                            mention_author=self.mention_replied_user,
                             suppress_embeds=True,
                             **kwargs
                         )
@@ -1945,6 +1948,7 @@ class DiscordBot(discord.Client):
                 last_message = await response_channel.send(
                     response,
                     allowed_mentions=self._allowed_mentions,
+                    mention_author=self.mention_replied_user,
                     suppress_embeds=True,
                     **kwargs
                 )
