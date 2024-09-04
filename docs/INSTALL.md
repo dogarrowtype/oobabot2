@@ -38,7 +38,7 @@ It boils down to first, creating a bot account:
 - Public bot / private bot doesn't matter
 - generate a token for the bot.  MAKE NOTE OF THIS FOR LATER.
 - enable the bot's intents as follows:
-  - `PRESENCE INTENT: OFF`
+  - `PRESENCE INTENT: ON`
   - `SERVER MEMBERS INTENT: ON`
   - `MESSAGE CONTENT INTENT: ON`
 
