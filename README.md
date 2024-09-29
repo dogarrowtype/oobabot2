@@ -1,3 +1,5 @@
+# Forked from https://github.com/xBelladonna/oobabot , originally from https://github.com/chrisrude/oobabot
+
 # `oobabot`
 
 **`oobabot`** is a Discord bot which talks to Large Language Model AIs (like Llama, Mistral, ChatGPT, etc...), using just about any API-enabled backend.
