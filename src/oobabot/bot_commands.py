@@ -184,7 +184,7 @@ class BotCommands:
                     send_timestamp=interaction.created_at.timestamp(),
                 )
                 # trigger a fake message request
-                return client.dispatch("message", message)
+                #return client.dispatch("message", message)
 
         @discord.app_commands.command(
             name="say",

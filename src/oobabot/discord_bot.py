@@ -97,7 +97,7 @@ class DiscordBot(discord.Client):
                 f"Unknown value '{self.prevent_impersonation}' for `prevent_impersonation`. "
                 + "Please fix your configuration."
             )
-        self.stream_responses = discord_settings["stream_responses"].lower()
+        self.stream_responses = discord_settings["stream_responses"]
         if self.stream_responses and self.stream_responses not in ["token", "sentence"]:
             raise ValueError(
                 f"Unknown value '{self.stream_responses}' for `stream_responses`. "
@@ -400,6 +400,7 @@ class DiscordBot(discord.Client):
             # sequence. Because we wait to accumulate messages, this ensures the deleted
             # message doesn't trigger a response to whatever the latest message ends up being.
             if not guaranteed_response:
+                skip = False
                 for ignore_prefix in self.ignore_prefixes:
                     if message.body_text.startswith(ignore_prefix):
                         skip = True
@@ -473,9 +474,9 @@ class DiscordBot(discord.Client):
         is_image_coming = None
 
         # are we creating an image?
-        image_prompt = self.image_generator.maybe_get_image_prompt(message.body_text)
-        if image_prompt:
-            is_image_coming = await self.image_generator.try_session()
+        #image_prompt = self.image_generator.maybe_get_image_prompt(message.body_text)
+        #if image_prompt:
+        #    is_image_coming = await self.image_generator.try_session()
 
         # Determine if there are images and get descriptions (if Vision is enabled)
         image_descriptions = await self._get_image_descriptions(raw_message)
@@ -806,6 +807,7 @@ class DiscordBot(discord.Client):
                         # Split lines and preserve our splitting characters using regex split
                         # with a capturing group to return the split character(s) in the list
                         lines = re.split(r"([" + self.line_split_pattern + r"]+)", response)
+                        lines = response
                         for line in lines:
                             # Sometimes the trailing space at the end of a sentence is kept,
                             # sometimes not. We avoid ambiguity by explicity stripping
@@ -906,6 +908,21 @@ class DiscordBot(discord.Client):
         response_stat.write_to_log(f"Response to {message.author_name} done!  ")
         self.response_stats.log_response_success(response_stat)
 
+
+    def _censor_text(textfake, textreal):
+        url_regex = re.compile(r'(https?\:\/\/|www\.)[a-zA-Z0-9\.\/\?\:@\-_=#]+\.([a-zA-Z]){2,6}([a-zA-Z0-9\.\&\/\?\:@\-_=#])*', re.IGNORECASE)
+        text = re.sub(url_regex, "🚫🔗", textreal)
+        text = re.sub(r'camaraderie', 'passionate, lustful, homoerotic feelings', text)
+        text = re.sub(r'  ', ' ', text)
+        bad_words_file = 'profanity_wordlist.txt'
+        with open(bad_words_file, 'r') as file:
+            censored_words_list = set(file.read().splitlines())
+            words = re.split(r'([^a-zA-Z0-9])', text)
+            censored_words = [word if word.lower() not in censored_words_list else '🤬' for word in words]
+            censored_text = ''.join(censored_words)
+            return censored_text
+
+
     async def _send_response_message(
         self,
         response: str,
@@ -929,12 +946,15 @@ class DiscordBot(discord.Client):
         - the sent discord message, if any
         - a boolean indicating if we need to abort the response entirely
         """
+        #response = self._censor_text(response)
         (sentence, abort_response) = self._filter_immersion_breaking_lines(response)
         if abort_response:
             return (None, True)
         if not sentence:
             # we can't send an empty message
             return (None, False)
+
+        sentence = self._censor_text(sentence)
 
         response_message = await response_channel.send(
             sentence,

@@ -232,10 +232,10 @@ class PromptGenerator:
             guild_name="",
             response_channel=""
         )
-        try:
-            prompt_units = await self.ooba_client.get_token_count(prompt_without_history)
-        except ValueError:
-            prompt_units = len(prompt_without_history)
+        #try:
+        #    prompt_units = await self.ooba_client.get_token_count(prompt_without_history)
+        #except ValueError:
+        prompt_units = len(prompt_without_history)
 
         # first we process and append the chat transcript
         context_full = False
@@ -281,10 +281,10 @@ class PromptGenerator:
                     {},
                 )
 
-            try:
-                line_units = await self.ooba_client.get_token_count(line)
-            except ValueError:
-                line_units = len(line)
+            #try:
+            #    line_units = await self.ooba_client.get_token_count(line)
+            #except ValueError:
+            line_units = len(line)
 
             if line_units >= self.max_context_units - prompt_units:
                 context_full = True
