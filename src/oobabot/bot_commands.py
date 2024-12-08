@@ -158,7 +158,7 @@ class BotCommands:
         )
         async def poke(interaction: discord.Interaction):
             channel = await get_messageable(interaction)
-            if not channel:
+            if not channel or channel.type == discord.ChannelType.private:
                 await discord_utils.fail_interaction(interaction)
                 return
 
