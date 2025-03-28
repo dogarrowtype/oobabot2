@@ -30,6 +30,7 @@ from oobabot import response_stats
 from oobabot import types
 from oobabot import vision
 
+from semantic_text_splitter import TextSplitter
 
 class DiscordBot(discord.Client):
     """
@@ -63,7 +64,7 @@ class DiscordBot(discord.Client):
         self.response_stats = response_stats
 
         self.bot_user_id = -1
-        self.message_character_limit = 2000
+        self.message_character_limit = 1980
 
         self.dont_split_responses = discord_settings["dont_split_responses"]
         self.ignore_dms = discord_settings["ignore_dms"]
@@ -806,37 +807,42 @@ class DiscordBot(discord.Client):
                         new_response = ""
                         # Split lines and preserve our splitting characters using regex split
                         # with a capturing group to return the split character(s) in the list
-                        lines = re.split(r"([" + self.line_split_pattern + r"]+)", response)
-                        lines = response
-                        for line in lines:
+                        #lines = re.split(r"([" + self.line_split_pattern + r"]+)", response)
+                        #lines = response
+
+                        splitter = TextSplitter(self.message_character_limit)
+                        segments = splitter.chunks(response)
+                        #segments = response
+                        for line in segments:
                             # Sometimes the trailing space at the end of a sentence is kept,
                             # sometimes not. We avoid ambiguity by explicity stripping
                             # additional whitespace and re-adding a trailing space.
-                            sentences = [
-                                x.strip(" ") + " " for x in self.sentence_splitter.segment(line)
-                            ]
-                            for sentence in sentences:
-                                if len(new_response + sentence) > self.message_character_limit:
-                                    fancy_logger.get().debug(
-                                        "Response exceeded %d character limit by %d "
-                                        + "characters! Posting current message and continuing "
-                                        + "in a new message.",
-                                        self.message_character_limit,
-                                        len(response) - self.message_character_limit
-                                    )
-                                    last_sent_message = await self._send_response_message(
-                                        new_response,
-                                        response_stat,
-                                        response_channel,
-                                        self._allowed_mentions,
-                                        reference,
-                                    )
-                                    if last_sent_message:
-                                        sent_message_count += 1
-                                    new_response = ""
-                                    # Finally, wait for the configured rate-limit timeout
-                                    await asyncio.sleep(self.stream_responses_speed_limit)
-                                new_response += sentence
+                            #sentences = [
+                            #    x.strip(" ") + " " for x in self.sentence_splitter.segment(line)
+                            #]
+                            #for sentence in sentences:
+                            if len(response) > self.message_character_limit:
+                                fancy_logger.get().debug(
+                                    "Response exceeded %d character limit by %d "
+                                    + "characters! Posting current message and continuing "
+                                    + "in a new message.",
+                                    self.message_character_limit,
+                                    len(response) - self.message_character_limit
+                                )
+
+                                last_sent_message = await self._send_response_message(
+                                    new_response,
+                                    response_stat,
+                                    response_channel,
+                                    self._allowed_mentions,
+                                    reference,
+                                )
+                                if last_sent_message:
+                                    sent_message_count += 1
+                                new_response = ""
+                                # Finally, wait for the configured rate-limit timeout
+                                await asyncio.sleep(self.stream_responses_speed_limit)
+                            new_response += line
                         response = new_response
                     (
                         last_sent_message,
