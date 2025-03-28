@@ -914,6 +914,7 @@ class DiscordBot(discord.Client):
         text = re.sub(url_regex, "🚫🔗", textreal)
         text = re.sub(r'camaraderie', 'passionate, lustful, homoerotic feelings', text)
         text = re.sub(r'  ', ' ', text)
+        text = re.sub(r'"', '', text)
         bad_words_file = 'profanity_wordlist.txt'
         with open(bad_words_file, 'r') as file:
             censored_words_list = set(file.read().splitlines())
